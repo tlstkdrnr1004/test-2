@@ -2990,7 +2990,7 @@ public class PasswordEncoderConfig {
     <dt>이 파일이 하는 일</dt><dd>시큐리티가 쓰는 "로그인한 사용자" 객체입니다. 안에 우리 <code>Member</code> 를 그대로 들고 있고, 권한 목록·비밀번호·아이디(이메일)를 시큐리티 형식으로 돌려줍니다. 소셜 로그인용 <code>OAuth2User</code> 도 함께 구현합니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>로그인 성공 시 인증 객체의 principal 로 세션에 저장됩니다. 이후 요청마다 GlobalModelAdvice · LoginMemberArgumentResolver 가 <code>getMember()</code> 로 회원을 꺼냅니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">⇡</span>상속 · 구현 관계</h4><p><span class="ty ty-c" title="클래스">CustomUserDetails</span> <code>implements</code> <span class="ty ty-i" title="인터페이스">UserDetails</span>, <span class="ty ty-i" title="인터페이스">OAuth2User</span>. 빈이 아니라 로그인할 때마다 <code>new</code> 로 만드는 객체입니다.</p></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>getAuthorities()</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">CustomUserDetails</span></td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">ImmutableCollections$List12</span> 안에 <span class="ty ty-o" title="실제 객체">SimpleGrantedAuthority</span> 1개 (예: <code>ROLE_ADMIN</code>)</td></tr><tr><td data-label="호출 코드"><code>getUsername()</code> / <code>getName()</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">CustomUserDetails</span></td><td data-label="반환되는 것">회원 이메일 String</td></tr><tr><td data-label="호출 코드"><code>getMember()</code></td><td data-label="실제로 실행되는 객체">Lombok @Getter</td><td data-label="반환되는 것">로그인할 때 넣어 둔 <span class="ty ty-o" title="실제 객체">Member</span> 객체 (세션에 같이 저장된 것)</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>세션에 저장된 Member 는 로그인 순간의 값입니다. 마이페이지에서 닉네임을 바꿔도 다시 로그인하기 전까지 머리말의 닉네임은 옛 값입니다(14장 참고).</p></div></div></details>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">⇡</span>상속 · 구현 관계</h4><p><span class="ty ty-c" title="클래스">CustomUserDetails</span> <code>implements</code> <span class="ty ty-i" title="인터페이스">UserDetails</span>, <span class="ty ty-i" title="인터페이스">OAuth2User</span>. 빈이 아니라 로그인할 때마다 <code>new</code> 로 만드는 객체입니다.</p></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>getAuthorities()</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">CustomUserDetails</span></td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">ImmutableCollections$List12</span> 안에 <span class="ty ty-o" title="실제 객체">SimpleGrantedAuthority</span> 1개 (예: <code>ROLE_ADMIN</code>)</td></tr><tr><td data-label="호출 코드"><code>getUsername()</code> / <code>getName()</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">CustomUserDetails</span></td><td data-label="반환되는 것">회원 이메일 String</td></tr><tr><td data-label="호출 코드"><code>getMember()</code></td><td data-label="실제로 실행되는 객체">Lombok @Getter</td><td data-label="반환되는 것">로그인할 때 넣어 둔 <span class="ty ty-o" title="실제 객체">Member</span> 객체 (세션에 같이 저장된 것)</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>세션에 저장된 Member 는 로그인 순간의 값입니다. 그래서 9장 마이페이지에서 닉네임·비밀번호를 바꾸면 MyPageApiController 가 DB 에서 회원을 다시 읽어 새 CustomUserDetails 로 세션을 새로 고칩니다.</p></div></div></details>
   <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>CustomUserDetails.java · 169줄</span>
     <button class="copy" data-target="f19c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
   <details class="codewrap"><summary>코드 펼치기 / 접기 (169줄 · 강사 주석 포함)</summary>
@@ -6214,10 +6214,10 @@ public class Restaurant {
     <dt>이 파일이 하는 일</dt><dd>리뷰 테이블(<code>review</code>) 엔티티입니다. 내용(1000자), 별점(1~5), 작성 회원, 대상 맛집, 이미지 주소, 신고 여부(<code>reported</code>), 작성 시각. <code>report()</code> 로 신고 표시를 켭니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>6장 상세 화면의 리뷰 목록, 평균 별점 계산, 7장 리뷰 작성·삭제·신고에 쓰입니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">restaurant</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">Restaurant</span></td><td data-label="실제 객체 · 값"><code>findByRestaurantIdOrderByCreatedAtDesc</code> 결과에서는 <span class="ty ty-o" title="실제 객체">Restaurant$HibernateProxy$…</span> (EntityGraph 가 member 만 포함)</td><td data-label="설명">실행 중 확인</td></tr><tr><td data-label="코드 속 이름">reported</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">boolean</span></td><td data-label="실제 객체 · 값">기본 false</td><td data-label="설명">data.sql 도 FALSE 로 넣음</td></tr></tbody></table></div></div></details>
-  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Review.java · 314줄</span>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">restaurant</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">Restaurant</span></td><td data-label="실제 객체 · 값"><code>findByRestaurantIdOrderByCreatedAtDesc</code> 결과에서는 <span class="ty ty-o" title="실제 객체">Restaurant$HibernateProxy$…</span> (EntityGraph 가 member 만 포함)</td><td data-label="설명">실행 중 확인</td></tr><tr><td data-label="코드 속 이름">reported</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">boolean</span></td><td data-label="실제 객체 · 값">기본 false</td><td data-label="설명">data.sql 도 FALSE 로 넣음</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>@OnDelete(action = OnDeleteAction.CASCADE)</code> (restaurant 필드)</td><td data-label="실제로 실행되는 객체">Hibernate 가 테이블을 만들 때</td><td data-label="반환되는 것">외래 키에 <code>on delete cascade</code> 를 붙임 (실행 로그로 확인) → 맛집이 지워지면 DB 가 그 맛집의 리뷰도 함께 지움</td></tr></tbody></table></div></div></details>
+  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Review.java · 319줄</span>
     <button class="copy" data-target="f36c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
-  <details class="codewrap"><summary>코드 펼치기 / 접기 (314줄 · 강사 주석 포함)</summary>
+  <details class="codewrap"><summary>코드 펼치기 / 접기 (319줄 · 강사 주석 포함)</summary>
   <pre><code id="f36c" data-path="src/main/java/com/example/mymatzip/entity/Review.java">package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) 선언
 // com.example.mymatzip.entity = entity 패키지 안에 있다는 뜻
 // 같은 패키지 안의 Member.java, Restaurant.java를 import 없이 바로 사용 가능
@@ -6229,6 +6229,8 @@ public class Restaurant {
 // ──────────────────────────────────────────────────────────
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA(Java Persistence API) 관련 어노테이션을 모두 가져옵니다.
 // 포함된 것들:
 //   @Entity -- 이 클래스가 DB 테이블임을 선언
@@ -6422,6 +6424,9 @@ public class Review {
     //
     //   [사용 화면] 맛집 상세 페이지 -- restaurant_id로 해당 맛집의 리뷰만 필터링하여 표시
     //   [참고] 맛집이 삭제되면 이 맛집에 달린 리뷰들도 함께 처리해야 합니다.
+    // [수정] 맛집이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    //   이 줄이 없으면 리뷰·찜이 달린 맛집을 지울 때 외래 키 오류(500)가 납니다.
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "restaurant_id", nullable = false)
 
     // Restaurant restaurant: 이 리뷰가 달린 맛집 객체
@@ -6547,10 +6552,10 @@ public class Review {
     <dt>이 파일이 하는 일</dt><dd>찜 테이블(<code>wishlist</code>) 엔티티입니다. 어떤 회원이 어떤 맛집을 찜했는지(회원·맛집 외래 키)와 시각을 저장합니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>6장 상세 화면의 찜 여부, 8장 찜하기·찜 목록, 9장 마이페이지 통계에 쓰입니다.</dd>
   </dl>
-  
-  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Wishlist.java · 246줄</span>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>@OnDelete(action = OnDeleteAction.CASCADE)</code> (restaurant 필드)</td><td data-label="실제로 실행되는 객체">Hibernate DDL</td><td data-label="반환되는 것">맛집이 지워지면 DB 가 그 맛집의 찜도 함께 지움</td></tr></tbody></table></div></div></details>
+  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Wishlist.java · 251줄</span>
     <button class="copy" data-target="f37c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
-  <details class="codewrap"><summary>코드 펼치기 / 접기 (246줄 · 강사 주석 포함)</summary>
+  <details class="codewrap"><summary>코드 펼치기 / 접기 (251줄 · 강사 주석 포함)</summary>
   <pre><code id="f37c" data-path="src/main/java/com/example/mymatzip/entity/Wishlist.java">package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) 선언
 // com.example.mymatzip.entity = entity 패키지 안에 있다는 뜻
 // 같은 패키지 안의 Member.java, Restaurant.java를 import 없이 바로 사용 가능
@@ -6562,6 +6567,8 @@ public class Review {
 // ──────────────────────────────────────────────────────────
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA(Java Persistence API) 관련 어노테이션을 모두 가져옵니다.
 // 포함된 것들:
 //   @Entity -- 이 클래스가 DB 테이블임을 선언
@@ -6732,6 +6739,9 @@ public class Wishlist {
     //     member_id + restaurant_id 조합으로 "이 회원이 이 맛집을 찜했는지" 확인
     //     찜한 상태 → 빨간 하트(꽉 찬 하트) 표시
     //     찜 안 한 상태 → 빈 하트(테두리만 있는 하트) 표시
+    // [수정] 맛집이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    //   이 줄이 없으면 리뷰·찜이 달린 맛집을 지울 때 외래 키 오류(500)가 납니다.
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "restaurant_id", nullable = false)
 
     // Restaurant restaurant: 찜된 맛집 객체
@@ -8531,7 +8541,7 @@ public class ReviewResponse {
     <dt>이 파일이 하는 일</dt><dd>맛집 업무 규칙입니다. 전체·카테고리·검색·최신 6개 조회(목록/페이지 두 가지씩), 상세, 등록(입력값 변환 후 저장), 수정(작성자만), 삭제(작성자 또는 관리자). 모든 조회 결과를 평균 별점과 함께 RestaurantResponse 로 바꿉니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>HomeController · RestaurantViewController · RestaurantApiController 가 호출합니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">restaurantService</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">RestaurantService</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">RestaurantService$$SpringCGLIB$$0</span></td><td data-label="설명">@Transactional → CGLIB</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">restaurantRepository</td><td data-label="선언 타입"><span class="ty ty-i" title="인터페이스">RestaurantRepository</span></td><td data-label="실제 객체 · 값"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="설명">생성자 주입</td></tr><tr><td data-label="코드 속 이름">reviewRepository</td><td data-label="선언 타입"><span class="ty ty-i" title="인터페이스">ReviewRepository</span></td><td data-label="실제 객체 · 값"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="설명">평균 별점용</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>findLatest6()</code></td><td data-label="실제로 실행되는 객체">프록시 → 읽기 전용 트랜잭션</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">ImmutableCollections$ListN</span>&lt;<span class="ty ty-c" title="클래스">RestaurantResponse</span>&gt; — <code>.toList()</code> 결과라 수정 불가 리스트</td></tr><tr><td data-label="호출 코드"><code>findAll(pageable)</code></td><td data-label="실제로 실행되는 객체">같음</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">PageResponse</span></td></tr><tr><td data-label="호출 코드"><code>save(form, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">새 <span class="ty ty-o" title="실제 객체">RestaurantResponse</span> (평균 0.0)</td></tr><tr><td data-label="호출 코드"><code>update(id, form, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">작성자가 아니면 IllegalArgumentException("수정 권한이 없습니다.") → 컨트롤러가 403</td></tr><tr><td data-label="호출 코드"><code>delete(id, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">반환 없음. 작성자도 관리자도 아니면 IllegalArgumentException</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>리뷰나 찜이 달린 맛집을 지우면 외래 키 때문에 DB 가 DELETE 를 거부해 500 오류가 납니다(실행 확인). 원본 코드의 동작이며 14장에 원인과 수정 방법을 적었습니다.</p></div></div></details>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">restaurantService</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">RestaurantService</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">RestaurantService$$SpringCGLIB$$0</span></td><td data-label="설명">@Transactional → CGLIB</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">restaurantRepository</td><td data-label="선언 타입"><span class="ty ty-i" title="인터페이스">RestaurantRepository</span></td><td data-label="실제 객체 · 값"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="설명">생성자 주입</td></tr><tr><td data-label="코드 속 이름">reviewRepository</td><td data-label="선언 타입"><span class="ty ty-i" title="인터페이스">ReviewRepository</span></td><td data-label="실제 객체 · 값"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="설명">평균 별점용</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>findLatest6()</code></td><td data-label="실제로 실행되는 객체">프록시 → 읽기 전용 트랜잭션</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">ImmutableCollections$ListN</span>&lt;<span class="ty ty-c" title="클래스">RestaurantResponse</span>&gt; — <code>.toList()</code> 결과라 수정 불가 리스트</td></tr><tr><td data-label="호출 코드"><code>findAll(pageable)</code></td><td data-label="실제로 실행되는 객체">같음</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">PageResponse</span></td></tr><tr><td data-label="호출 코드"><code>save(form, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">새 <span class="ty ty-o" title="실제 객체">RestaurantResponse</span> (평균 0.0)</td></tr><tr><td data-label="호출 코드"><code>update(id, form, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">작성자가 아니면 IllegalArgumentException("수정 권한이 없습니다.") → 컨트롤러가 403</td></tr><tr><td data-label="호출 코드"><code>delete(id, loginMember)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">반환 없음. 작성자도 관리자도 아니면 IllegalArgumentException</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>맛집만 DELETE 해도 리뷰 · 찜 · 답글이 함께 지워집니다. Review · Wishlist · Reply 엔티티의 <code>@OnDelete(CASCADE)</code> 로 DB 외래 키가 <code>on delete cascade</code> 이기 때문입니다(5장 · 7장). 이것이 없으면 DB 가 DELETE 를 거부해 500 오류가 납니다.</p></div></div></details>
   <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>RestaurantService.java · 480줄</span>
     <button class="copy" data-target="f46c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
   <details class="codewrap"><summary>코드 펼치기 / 접기 (480줄 · 강사 주석 포함)</summary>
@@ -11849,7 +11859,7 @@ function reportReview(reviewId) {
 <li><b>맛집 목록</b> 클릭 → 로그인 화면으로 이동합니다(목록은 로그인 필요). user1@test.com / 1234 로 로그인.</li>
 <li>/restaurants → 6개. <b>한식</b> 버튼 → 김치찌개 명가 · 백반의 정석 2개. 검색창에 <code>파스타</code> → 파스타 공방 1개.</li>
 <li><b>맛집 등록</b> → 이름 · 카테고리 · 주소 입력 → 저장 → 상세 화면으로 이동, 평균 별점 0.0, 수정·삭제 버튼이 보임. <b>수정</b> → 이름 바꾸고 저장 → 바뀐 이름.</li>
-<li>방금 만든 맛집 상세에서 <b>삭제</b> → 목록으로 이동(리뷰가 없을 때만 성공).</li>
+<li>방금 만든 맛집 상세에서 <b>삭제</b> → 목록으로 이동.</li>
 <li>예제 맛집 상세(김치찌개 명가)에 리뷰 2개, 평균 4.5 가 보입니다. 리뷰 등록 · 찜하기 버튼은 아직 API 가 없어 동작하지 않습니다(7장 · 8장).</li>
 </ol></div>
 <nav class="chap-nav"><a class="prev" href="#ch5"><small>← 이전</small>맛집·리뷰·찜 데이터</a><a class="next" href="#ch7"><small>다음 →</small>리뷰 · 답글</a></nav></section>
@@ -12097,10 +12107,10 @@ public class ReviewApiController {
     <dt>이 파일이 하는 일</dt><dd>답글 테이블(<code>reply</code>) 엔티티입니다. 내용(500자), 대상 리뷰, 작성 회원, 작성 시각.</dd>
     <dt>요청·응답 흐름에서</dt><dd>ReplyService 가 만들고 저장합니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">review</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">Review</span></td><td data-label="실제 객체 · 값">LAZY. <span class="ty ty-o" title="실제 객체">Review$HibernateProxy$…</span> 또는 <span class="ty ty-o" title="실제 객체">Review</span></td><td data-label="설명"><code>review_id</code> 외래 키</td></tr></tbody></table></div></div></details>
-  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Reply.java · 110줄</span>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">●</span>이 코드에서 다루는 객체</h4><table class="xt xt-4"><thead><tr><th>코드 속 이름</th><th>선언 타입</th><th>실제 객체 · 값</th><th>설명</th></tr></thead><tbody><tr><td data-label="코드 속 이름">review</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">Review</span></td><td data-label="실제 객체 · 값">LAZY. <span class="ty ty-o" title="실제 객체">Review$HibernateProxy$…</span> 또는 <span class="ty ty-o" title="실제 객체">Review</span></td><td data-label="설명"><code>review_id</code> 외래 키. <code>@OnDelete(CASCADE)</code> 로 리뷰가 지워지면(맛집 삭제로 함께 지워질 때 포함) 답글도 DB 가 지움</td></tr></tbody></table></div></div></details>
+  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>Reply.java · 114줄</span>
     <button class="copy" data-target="f57c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
-  <details class="codewrap"><summary>코드 펼치기 / 접기 (110줄 · 강사 주석 포함)</summary>
+  <details class="codewrap"><summary>코드 펼치기 / 접기 (114줄 · 강사 주석 포함)</summary>
   <pre><code id="f57c" data-path="src/main/java/com/example/mymatzip/entity/Reply.java">// ============================================================
 // [Reply.java] 대댓글 엔티티 — DB의 reply 테이블과 1:1 매핑되는 클래스
 // ============================================================
@@ -12136,6 +12146,8 @@ public class ReviewApiController {
 package com.example.mymatzip.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA 관련 어노테이션:
 //   @Entity, @Id, @GeneratedValue, @Column, @ManyToOne, @JoinColumn
 //   FetchType, GenerationType
@@ -12185,6 +12197,8 @@ public class Reply {
     // FetchType.LAZY: 대댓글을 가져올 때 리뷰 정보는 나중에 필요할 때만 조회
     // 비유: 답글을 읽을 때, 원래 댓글 내용은 필요할 때만 펼쳐보는 것
     @ManyToOne(fetch = FetchType.LAZY)
+    // [수정] 리뷰가 삭제되면(맛집 삭제로 함께 지워질 때 포함) DB 가 이 답글도 함께 지웁니다.
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
@@ -13228,10 +13242,10 @@ function removeWish(restaurantId) {
     <dt>이 파일이 하는 일</dt><dd>마이페이지 API 입니다. 내 맛집(페이지), 내 리뷰(페이지), 통계(맛집·리뷰·찜 개수), 닉네임 변경(PUT), 비밀번호 변경(PUT, 현재 비밀번호 확인). Service 를 거치지 않고 Repository 를 직접 쓰는 메서드도 있습니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>mypage/dashboard.jsp 의 fetch 가 호출합니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">myPageApiController</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">MyPageApiController</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">MyPageApiController</span></td><td data-label="설명">Repository 3개 + MemberService + PasswordEncoder 주입</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>PageRequest.of(page, size, Sort.by("createdAt").descending())</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-c" title="클래스">PageRequest</span></td><td data-label="반환되는 것"><span class="ty ty-i" title="인터페이스">Pageable</span> 구현 객체 <span class="ty ty-o" title="실제 객체">PageRequest</span></td></tr><tr><td data-label="호출 코드"><code>restaurantRepository.findByMemberId(id, pageable)</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">PageImpl</span>&lt;Restaurant&gt;</td></tr><tr><td data-label="호출 코드"><code>passwordEncoder.matches(현재, loginMember.getPassword())</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">BCryptPasswordEncoder</span></td><td data-label="반환되는 것">boolean — 세션에 저장된 Member 의 암호문과 비교</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>세션의 Member 는 로그인 순간의 값이라, 비밀번호를 바꾼 뒤 같은 세션에서 한 번 더 바꾸려면 “현재 비밀번호”에 <b>바꾸기 전</b> 비밀번호를 넣어야 통과합니다(실행 확인, 원본 동작). 다시 로그인하면 새 비밀번호로만 됩니다.</p></div></div></details>
-  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>MyPageApiController.java · 246줄</span>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">myPageApiController</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">MyPageApiController</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">MyPageApiController</span></td><td data-label="설명">Repository 3개 + MemberService + PasswordEncoder 주입</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>PageRequest.of(page, size, Sort.by("createdAt").descending())</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-c" title="클래스">PageRequest</span></td><td data-label="반환되는 것"><span class="ty ty-i" title="인터페이스">Pageable</span> 구현 객체 <span class="ty ty-o" title="실제 객체">PageRequest</span></td></tr><tr><td data-label="호출 코드"><code>restaurantRepository.findByMemberId(id, pageable)</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">jdk.proxy2.$ProxyNNN</span> → <span class="ty ty-o" title="실제 객체">SimpleJpaRepository</span></td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">PageImpl</span>&lt;Restaurant&gt;</td></tr><tr><td data-label="호출 코드"><code>passwordEncoder.matches(현재, loginMember.getPassword())</code></td><td data-label="실제로 실행되는 객체"><span class="ty ty-o" title="실제 객체">BCryptPasswordEncoder</span></td><td data-label="반환되는 것">boolean — 세션에 저장된 Member 의 암호문과 비교</td></tr><tr><td data-label="호출 코드"><code>refreshLoginMember(id, request, response)</code></td><td data-label="실제로 실행되는 객체">이 컨트롤러</td><td data-label="반환되는 것">반환 없음. <span class="ty ty-o" title="실제 객체">Member</span> 를 DB 에서 다시 읽어 새 <span class="ty ty-o" title="실제 객체">CustomUserDetails</span> → <span class="ty ty-o" title="실제 객체">UsernamePasswordAuthenticationToken</span> 을 세션에 다시 저장 (세션이 없는 JWT 요청은 건너뜀)</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>세션에 저장된 Member 는 로그인 순간의 값입니다. 바꾼 뒤 <code>refreshLoginMember()</code> 로 세션을 새로 고치지 않으면, 다시 로그인하기 전까지 메뉴의 닉네임이 옛 값이고 다음 비밀번호 확인도 옛 암호문과 비교하게 됩니다.</p></div></div></details>
+  <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>MyPageApiController.java · 277줄</span>
     <button class="copy" data-target="f65c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
-  <details class="codewrap"><summary>코드 펼치기 / 접기 (246줄 · 강사 주석 포함)</summary>
+  <details class="codewrap"><summary>코드 펼치기 / 접기 (277줄 · 강사 주석 포함)</summary>
   <pre><code id="f65c" data-path="src/main/java/com/example/mymatzip/controller/api/MyPageApiController.java">// ============================================================
 // [MyPageApiController.java] 마이페이지 API 컨트롤러
 // ============================================================
@@ -13256,6 +13270,7 @@ package com.example.mymatzip.controller.api;
 // ── import 문 ────────────────────────────────────────────────
 
 // @LoginMember: 현재 로그인한 회원 정보를 컨트롤러 매개변수에 자동 주입하는 어노테이션
+import com.example.mymatzip.config.security.CustomUserDetails;
 import com.example.mymatzip.config.security.LoginMember;
 
 // 엔티티와 DTO
@@ -13283,6 +13298,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -13423,7 +13444,9 @@ public class MyPageApiController {
     @PutMapping("/nickname")
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; updateNickname(
             @LoginMember Member loginMember,
-            @RequestBody Map&lt;String, String&gt; body) {
+            @RequestBody Map&lt;String, String&gt; body,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         String newNickname = body.get("nickname");
 
@@ -13436,6 +13459,7 @@ public class MyPageApiController {
         try {
             // MemberService를 통해 닉네임 변경
             memberService.updateNickname(loginMember.getId(), newNickname.trim());
+            refreshLoginMember(loginMember.getId(), request, response);  // [수정] 세션의 회원 정보도 새 값으로
             return ResponseEntity.ok(Map.of("message", "닉네임이 변경되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -13450,7 +13474,9 @@ public class MyPageApiController {
     @PutMapping("/password")
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; updatePassword(
             @LoginMember Member loginMember,
-            @RequestBody Map&lt;String, String&gt; body) {
+            @RequestBody Map&lt;String, String&gt; body,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         String currentPassword = body.get("currentPassword");
         String newPassword = body.get("newPassword");
@@ -13471,11 +13497,30 @@ public class MyPageApiController {
         try {
             // MemberService를 통해 비밀번호 변경
             memberService.updatePassword(loginMember.getId(), passwordEncoder.encode(newPassword));
+            refreshLoginMember(loginMember.getId(), request, response);  // [수정] 세션의 회원 정보도 새 값으로
             return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // ── [수정] 세션에 저장된 로그인 회원 정보 새로 고치기 ──────────────
+    // 로그인할 때 세션에 넣어 둔 Member 는 그 순간의 값이라, 닉네임·비밀번호를 바꿔도
+    // 다시 로그인하기 전까지 옛 값이 남습니다(메뉴의 닉네임, 다음 비밀번호 확인).
+    // DB 에서 회원을 다시 읽어 로그인할 때와 같은 방법으로 인증 정보를 만들고 세션에 다시 저장합니다.
+    // 세션이 없는 요청(JWT 토큰으로 호출한 API)은 저장할 세션이 없으므로 건너뜁니다.
+    private void refreshLoginMember(Long memberId, HttpServletRequest request, HttpServletResponse response) {
+        if (request.getSession(false) == null) {
+            return;
+        }
+        CustomUserDetails userDetails = new CustomUserDetails(memberService.findById(memberId));
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+        new HttpSessionSecurityContextRepository().saveContext(context, request, response);
     }
 }
 </code></pre></details>
@@ -14009,7 +14054,8 @@ document.getElementById('passwordForm').addEventListener('submit', function(e) {
 <div class="check"><h3 id="s-c9">✅ 확인 단계 · 9장 · 마이페이지</h3><ol><li>Gradle <code>classes</code> · <code>test</code> → BUILD SUCCESSFUL.</li>
 <li>user1@test.com 로그인 → 메뉴 <b>마이페이지</b> → 통계 카드 등록 맛집 2 · 리뷰 4 · 찜 0 (예제 데이터 기준, 찜했다면 그 수).</li>
 <li><b>내 맛집</b> 탭에 마라탕 천국 · 카페 드리퍼, <b>내 리뷰</b> 탭에 리뷰 4개가 보입니다.</li>
-<li><b>프로필 수정</b> 탭 → 새 닉네임 입력 → 변경 → “닉네임이 변경되었습니다.”. 위쪽 프로필 이름은 바로 바뀌지만 맨 위 메뉴의 닉네임은 다시 로그인해야 바뀝니다.</li></ol></div>
+<li><b>프로필 수정</b> 탭 → 새 닉네임 입력 → 변경 → “닉네임이 변경되었습니다.”. 다른 화면으로 가면 맨 위 메뉴의 닉네임도 바뀌어 있습니다.</li>
+<li>비밀번호 변경: 현재 1234 → 새 5678 → 성공. 이어서 현재 5678 → 새 9999 → 성공(같은 세션에서 바로 새 비밀번호가 기준). 로그아웃 후 9999 로 로그인됩니다.</li></ol></div>
 <nav class="chap-nav"><a class="prev" href="#ch8"><small>← 이전</small>찜</a><a class="next" href="#ch10"><small>다음 →</small>관리자</a></nav></section>
 <section class="chapter" id="sec-ch10"><div class="chap-head"><span class="chap-no">10</span><h2 id="ch10">관리자</h2></div>
 <p class="team">👥 팀이면: <b>팀원 3</b></p><p>ADMIN 권한 회원만 들어가는 관리자 화면 4개(대시보드 · 회원 · 맛집 · 리뷰)와 API 를 만듭니다. 권한 검사는 4장 SecurityConfig 의 <code>/admin/**</code>, <code>/api/admin/**</code> → <code>hasRole("ADMIN")</code> 이 합니다.</p>
@@ -14025,7 +14071,7 @@ document.getElementById('passwordForm').addEventListener('submit', function(e) {
     <dt>이 파일이 하는 일</dt><dd>관리자 업무 규칙입니다. 전체 통계(회원·맛집·리뷰 수), 회원·맛집 페이지 조회, 전체 리뷰, 역할 변경, 맛집·리뷰·회원 삭제.</dd>
     <dt>요청·응답 흐름에서</dt><dd>AdminApiController 가 호출합니다.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">adminService</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">AdminService</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">AdminService$$SpringCGLIB$$0</span></td><td data-label="설명">@Transactional → CGLIB</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>getStats()</code></td><td data-label="실제로 실행되는 객체">읽기 트랜잭션</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">HashMap</span> — 예제 데이터 기준 <code>{totalMembers=3, totalReviews=10, totalRestaurants=6}</code></td></tr><tr><td data-label="호출 코드"><code>changeRole(id, Role.ADMIN)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">반환 없음. 변경 감지로 UPDATE</td></tr><tr><td data-label="호출 코드"><code>deleteRestaurant(id)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">리뷰·찜이 달려 있으면 DB 외래 키 오류 → 500 (14장)</td></tr></tbody></table></div></div></details>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">◆</span>스프링이 만들어 보관하는 객체 (빈)</h4><table class="xt xt-4"><thead><tr><th>빈 이름</th><th>선언 타입</th><th>실제로 만들어지는 객체</th><th>설명</th></tr></thead><tbody><tr><td data-label="빈 이름">adminService</td><td data-label="선언 타입"><span class="ty ty-c" title="클래스">AdminService</span></td><td data-label="실제로 만들어지는 객체"><span class="ty ty-o" title="실제 객체">AdminService$$SpringCGLIB$$0</span></td><td data-label="설명">@Transactional → CGLIB</td></tr></tbody></table></div><div class="xp-sec"><h4><span class="xp-ic">→</span>메서드 호출 → 무엇이 실행되고 무엇이 반환되나</h4><table class="xt xt-3"><thead><tr><th>호출 코드</th><th>실제로 실행되는 객체</th><th>반환되는 것</th></tr></thead><tbody><tr><td data-label="호출 코드"><code>getStats()</code></td><td data-label="실제로 실행되는 객체">읽기 트랜잭션</td><td data-label="반환되는 것"><span class="ty ty-o" title="실제 객체">HashMap</span> — 예제 데이터 기준 <code>{totalMembers=3, totalReviews=10, totalRestaurants=6}</code></td></tr><tr><td data-label="호출 코드"><code>changeRole(id, Role.ADMIN)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">반환 없음. 변경 감지로 UPDATE</td></tr><tr><td data-label="호출 코드"><code>deleteRestaurant(id)</code></td><td data-label="실제로 실행되는 객체">쓰기 트랜잭션</td><td data-label="반환되는 것">반환 없음. 리뷰 · 찜 · 답글은 DB 의 on delete cascade 로 함께 삭제</td></tr></tbody></table></div></div></details>
   <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>AdminService.java · 173줄</span>
     <button class="copy" data-target="f68c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
   <details class="codewrap"><summary>코드 펼치기 / 접기 (173줄 · 강사 주석 포함)</summary>
@@ -15100,7 +15146,7 @@ function deleteReview(id) {
 <li>user1@test.com 으로 로그인한 상태에서 http://localhost:8082/admin → 403 오류 화면 (ADMIN 아님).</li>
 <li>로그아웃 → admin@test.com / 1234 로그인 → 메뉴 <b>관리자</b> → 전체 회원 3 · 전체 맛집 6 · 전체 리뷰 10 (서버를 켠 직후 기준).</li>
 <li>회원 관리: user2 의 역할을 ADMIN 으로 → “역할이 변경되었습니다.”. 리뷰 관리: 리뷰 하나 삭제 → 표에서 사라짐.</li>
-<li>맛집 관리: 리뷰가 없는 맛집(직접 등록한 것)을 삭제 → 성공.</li>
+<li>맛집 관리: 리뷰가 달린 맛집(예: 김치찌개 명가)을 삭제 → “맛집이 삭제되었습니다.” → 대시보드의 맛집 · 리뷰 수가 줄어듭니다.</li>
 <li><b>전체 흐름</b>: 새 계정 가입 → 로그인 → 맛집 등록 → 목록·검색 → 상세 → 리뷰 → 답글 → 찜 → 마이페이지 → 로그아웃 → 관리자 로그인 → 관리자 화면. 모두 동작하면 완성입니다.</li></ol></div>
 <nav class="chap-nav"><a class="prev" href="#ch9"><small>← 이전</small>마이페이지</a><a class="next" href="#ch11"><small>다음 →</small>준비 코드</a></nav></section>
 <section class="chapter" id="sec-ch11"><div class="chap-head"><span class="chap-no">11</span><h2 id="ch11">화면에서 아직 쓰지 않는 준비 코드</h2></div>
@@ -16229,10 +16275,10 @@ jobs:
 <tr><td>admin@test.com / 1234 로그인 실패</td><td>DataInitializer 누락 또는 data.sql 누락</td><td>4장 DataInitializer, 5장 data.sql 확인. H2 콘솔에서 비밀번호가 $2a$ 로 시작하는지 확인</td></tr>
 <tr><td>로그인 후 메뉴가 바뀌지 않음</td><td>GlobalModelAdvice 누락 또는 MemberApiController 의 saveContext 줄 누락</td><td>두 파일 다시 붙여 넣기</td></tr>
 <tr><td>/admin 접속 시 403</td><td>ADMIN 이 아님</td><td>admin@test.com 으로 로그인. 또는 관리자 화면에서 역할을 ADMIN 으로 바꾼 뒤 다시 로그인</td></tr>
-<tr><td>리뷰·찜이 달린 맛집 삭제 시 <b>Internal Server Error</b> / 외래 키 오류 알림</td><td>원본 코드의 문제. Review · Wishlist 가 맛집을 참조하는데 맛집만 DELETE 함</td><td>원본 그대로 두면 리뷰가 없는 맛집만 지울 수 있습니다. 고치려면 RestaurantService.delete() / AdminService.deleteRestaurant() 에서 그 맛집의 찜·리뷰(·답글)를 먼저 지우는 코드를 추가합니다(강사와 상의)</td></tr>
+<tr><td>리뷰·찜이 달린 맛집 삭제 시 <b>Internal Server Error</b> / 외래 키 오류 알림</td><td>Review · Wishlist · Reply 의 <code>@OnDelete(action = OnDeleteAction.CASCADE)</code> 줄 누락</td><td>세 엔티티 파일을 다시 붙여 넣고 서버 재시작(테이블을 새로 만들어야 외래 키에 반영됨). Run 창에 <code>on delete cascade</code> 가 3번 보이면 정상</td></tr>
 <tr><td>관리자 대시보드의 통계 숫자 칸이 비어 있음</td><td>dashboard.jsp 가 읽는 JSON 키와 API 가 보내는 키가 다름</td><td>dashboard.jsp 의 <code>data.totalMembers · data.totalRestaurants · data.totalReviews</code> 줄을 다시 붙여 넣기. F12 → Network 에서 /api/admin/stats 응답 확인</td></tr>
 <tr><td>글·리뷰가 있는 회원 삭제 시 오류</td><td>위와 같은 외래 키 이유</td><td>새로 가입한 빈 계정으로 시험</td></tr>
-<tr><td>닉네임을 바꿨는데 머리말은 옛 닉네임 · 두 번째 비밀번호 변경이 “현재 비밀번호 불일치”</td><td>세션에 저장된 Member 가 로그인 순간의 값 (원본 동작)</td><td>로그아웃 후 다시 로그인하면 새 값이 반영됩니다</td></tr>
+<tr><td>닉네임을 바꿨는데 메뉴는 옛 닉네임 · 두 번째 비밀번호 변경이 “현재 비밀번호 불일치”</td><td>MyPageApiController 의 <code>refreshLoginMember</code> 호출 누락</td><td>9장 MyPageApiController 를 다시 붙여 넣기</td></tr>
 <tr><td>화면 모양이 깨지고(디자인 없음) 모바일 메뉴가 안 열림</td><td>header.jsp 가 인터넷(CDN cdn.jsdelivr.net)에서 Bootstrap 을 불러오는데 인터넷이 막힘</td><td>인터넷 연결 확인. 기능(fetch)은 CDN 없이도 동작합니다</td></tr>
 <tr><td>H2 콘솔 접속 실패</td><td>JDBC URL 이 다름</td><td><code>jdbc:h2:mem:matzipdb</code> · <code>sa</code> · 비밀번호 비움. 서버가 켜져 있어야 함</td></tr>
 <tr><td>서버를 껐다 켜니 데이터가 처음으로 돌아감</td><td>H2 메모리 DB + ddl-auto=create</td><td>정상 동작. 계속 보관하려면 MySQL 로 바꿔야 합니다(build.gradle 에 드라이버는 이미 있음)</td></tr>

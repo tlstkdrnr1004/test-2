@@ -22,6 +22,7 @@ package com.example.mymatzip.controller.api;
 // ── import 문 ────────────────────────────────────────────────
 
 // @LoginMember: 현재 로그인한 회원 정보를 컨트롤러 매개변수에 자동 주입하는 어노테이션
+import com.example.mymatzip.config.security.CustomUserDetails;
 import com.example.mymatzip.config.security.LoginMember;
 
 // 엔티티와 DTO
@@ -49,6 +50,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -189,7 +196,9 @@ public class MyPageApiController {
     @PutMapping("/nickname")
     public ResponseEntity<Map<String, Object>> updateNickname(
             @LoginMember Member loginMember,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         String newNickname = body.get("nickname");
 
@@ -202,6 +211,7 @@ public class MyPageApiController {
         try {
             // MemberService를 통해 닉네임 변경
             memberService.updateNickname(loginMember.getId(), newNickname.trim());
+            refreshLoginMember(loginMember.getId(), request, response);  // [수정] 세션의 회원 정보도 새 값으로
             return ResponseEntity.ok(Map.of("message", "닉네임이 변경되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -216,7 +226,9 @@ public class MyPageApiController {
     @PutMapping("/password")
     public ResponseEntity<Map<String, Object>> updatePassword(
             @LoginMember Member loginMember,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         String currentPassword = body.get("currentPassword");
         String newPassword = body.get("newPassword");
@@ -237,10 +249,29 @@ public class MyPageApiController {
         try {
             // MemberService를 통해 비밀번호 변경
             memberService.updatePassword(loginMember.getId(), passwordEncoder.encode(newPassword));
+            refreshLoginMember(loginMember.getId(), request, response);  // [수정] 세션의 회원 정보도 새 값으로
             return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // ── [수정] 세션에 저장된 로그인 회원 정보 새로 고치기 ──────────────
+    // 로그인할 때 세션에 넣어 둔 Member 는 그 순간의 값이라, 닉네임·비밀번호를 바꿔도
+    // 다시 로그인하기 전까지 옛 값이 남습니다(메뉴의 닉네임, 다음 비밀번호 확인).
+    // DB 에서 회원을 다시 읽어 로그인할 때와 같은 방법으로 인증 정보를 만들고 세션에 다시 저장합니다.
+    // 세션이 없는 요청(JWT 토큰으로 호출한 API)은 저장할 세션이 없으므로 건너뜁니다.
+    private void refreshLoginMember(Long memberId, HttpServletRequest request, HttpServletResponse response) {
+        if (request.getSession(false) == null) {
+            return;
+        }
+        CustomUserDetails userDetails = new CustomUserDetails(memberService.findById(memberId));
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+        new HttpSessionSecurityContextRepository().saveContext(context, request, response);
     }
 }

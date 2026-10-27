@@ -9,6 +9,8 @@ package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) �
 // ──────────────────────────────────────────────────────────
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA(Java Persistence API) 관련 어노테이션을 모두 가져옵니다.
 // 포함된 것들:
 //   @Entity -- 이 클래스가 DB 테이블임을 선언
@@ -179,6 +181,9 @@ public class Wishlist {
     //     member_id + restaurant_id 조합으로 "이 회원이 이 맛집을 찜했는지" 확인
     //     찜한 상태 → 빨간 하트(꽉 찬 하트) 표시
     //     찜 안 한 상태 → 빈 하트(테두리만 있는 하트) 표시
+    // [수정] 맛집이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    //   이 줄이 없으면 리뷰·찜이 달린 맛집을 지울 때 외래 키 오류(500)가 납니다.
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "restaurant_id", nullable = false)
 
     // Restaurant restaurant: 찜된 맛집 객체
