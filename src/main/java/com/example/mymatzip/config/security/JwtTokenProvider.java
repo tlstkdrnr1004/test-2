@@ -58,6 +58,11 @@ import java.util.Date;
 // 암호화 키 관련 import
 import javax.crypto.SecretKey;
 
+// [수정] 비밀키가 없을 때 임의 키를 만들고 경고 로그를 남기기 위한 import
+import java.security.SecureRandom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // ── @Component ───────────────────────────────────────────────
 // 이 클래스를 스프링 빈으로 등록합니다.
 // 다른 클래스에서 의존성 주입(DI)으로 사용할 수 있습니다.
@@ -85,9 +90,23 @@ public class JwtTokenProvider {
     // Keys.hmacShaKeyFor(): 문자열 비밀키를 HMAC-SHA256 암호화에 사용할 수 있는
     //   SecretKey 객체로 변환합니다.
     // 비유: 평범한 금속 조각(문자열)을 정밀한 금형(SecretKey)으로 가공하는 것
-    public JwtTokenProvider(@Value("${jwt.secret}") String secret,
+    //
+    // [수정] jwt.secret 은 환경 변수 JWT_SECRET 에서 받습니다(application.properties 참고).
+    //   값이 비어 있으면 실행할 때마다 64바이트 임의 키를 만듭니다(개발용).
+    //   이때 서버를 다시 켜면 예전에 발급한 토큰은 검증에 실패합니다.
+    //   값이 32바이트보다 짧으면 Keys.hmacShaKeyFor() 가 WeakKeyException 으로 시작을 막습니다.
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
+
+    public JwtTokenProvider(@Value("${jwt.secret:}") String secret,
                             @Value("${jwt.expiration}") long expiration) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        if (secret == null || secret.isBlank()) {
+            byte[] randomKey = new byte[64];
+            new SecureRandom().nextBytes(randomKey);
+            this.secretKey = Keys.hmacShaKeyFor(randomKey);
+            log.warn("JWT_SECRET 환경 변수가 없어 임의 JWT 비밀키를 사용합니다. 서버를 다시 켜면 기존 토큰은 무효가 됩니다.");
+        } else {
+            this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        }
         this.expiration = expiration;
     }
 

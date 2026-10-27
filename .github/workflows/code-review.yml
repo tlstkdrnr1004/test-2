@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# [추가] 이 작업이 PR 에 요약 댓글을 쓰려면 쓰기 권한이 필요합니다.
+#   저장소 기본 설정이 "읽기 전용"이면 이 줄이 없을 때 403 (Resource not accessible by integration) 으로 실패합니다.
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   review-check:
     runs-on: ubuntu-latest

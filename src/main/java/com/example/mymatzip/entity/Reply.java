@@ -93,6 +93,8 @@ public class Reply {
     // @ManyToOne: "대댓글 여러 개(Many)가 회원 1명(One)에게 속한다"
     // FetchType.LAZY: 대댓글을 가져올 때 작성자 정보는 나중에 필요할 때만 조회
     @ManyToOne(fetch = FetchType.LAZY)
+    // [수정] 회원이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 

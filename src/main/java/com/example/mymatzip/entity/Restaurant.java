@@ -9,6 +9,8 @@ package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) �
 // ──────────────────────────────────────────────────────────
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA(Java Persistence API) 관련 어노테이션을 모두 가져옵니다.
 // 포함된 것들:
 //   @Entity -- 이 클래스가 DB 테이블임을 선언
@@ -225,6 +227,8 @@ public class Restaurant {
     //
     //   [사용 화면] 맛집 상세 페이지 -- "등록자: 맛집탐험가" 표시
     //   [사용 화면] 맛집 수정/삭제 -- 본인이 등록한 맛집인지 확인 (member_id 비교)
+    // [수정] 회원이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "member_id", nullable = false)
 
     // Member member: 이 맛집을 등록한 회원 객체를 저장하는 필드

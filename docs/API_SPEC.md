@@ -6,7 +6,7 @@
 
 ## 📌 공통 사항
 
-- **Base URL**: `http://localhost:8080`
+- **Base URL**: `http://localhost:8082`
 - **Content-Type**: `application/json` (API 요청/응답)
 - **인증**: 세션 기반 (로그인 후 세션 쿠키 자동 전송)
 - **에러 응답**: HTTP 상태 코드 + 에러 메시지

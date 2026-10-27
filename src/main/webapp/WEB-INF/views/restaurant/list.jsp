@@ -117,6 +117,10 @@
                 <div class="col-md-6 col-lg-4">
                     <%-- card h-100: 높이 100% (같은 줄 카드 높이 통일) --%>
                     <div class="card h-100">
+                        <%-- [추가] 대표 사진 --%>
+                        <c:if test="${not empty r.imageUrl}">
+                            <img src="${r.imageUrl}" class="card-img-top" alt="${r.name}" style="height: 180px; object-fit: cover;">
+                        </c:if>
                         <div class="card-body">
                             <%-- 맛집 이름(왼쪽) + 카테고리 뱃지(오른쪽) --%>
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -245,6 +249,7 @@ function renderCards(restaurants) {
     container.innerHTML = restaurants.map(r => `
         <div class="col-md-6 col-lg-4">
             <div class="card h-100">
+                \${r.imageUrl ? '<img src="' + r.imageUrl + '" class="card-img-top" alt="" style="height: 180px; object-fit: cover;">' : ''}
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <h5 class="card-title mb-0">

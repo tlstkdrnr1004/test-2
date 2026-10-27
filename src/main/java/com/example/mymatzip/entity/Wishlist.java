@@ -152,6 +152,8 @@ public class Wishlist {
     //
     //   [사용 화면] 마이페이지 -- "내가 찜한 맛집" 목록 조회 시
     //     member_id = 로그인한 회원의 id 로 필터링하여 보여줌
+    // [수정] 회원이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "member_id", nullable = false)
 
     // Member member: 찜한 회원 객체

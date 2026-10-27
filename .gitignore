@@ -25,3 +25,6 @@ Thumbs.db
 # === H2 Database ===
 *.mv.db
 *.trace.db
+
+# === 업로드한 사진 (FileService) ===
+uploads/

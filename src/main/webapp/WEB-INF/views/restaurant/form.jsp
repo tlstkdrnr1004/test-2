@@ -144,6 +144,16 @@
                                   placeholder="맛집을 소개해주세요 (500자 이내)">${isEdit ? restaurant.description : ''}</textarea>
                     </div>
 
+                    <%-- [추가] 대표 사진: 파일을 고르면 바로 /api/files/upload 로 올리고,     --%>
+                    <%--   받은 주소(/uploads/파일명)를 숨은 칸 imageUrl 에 넣어 함께 저장합니다. --%>
+                    <div class="mb-3">
+                        <label for="imageFile" class="form-label">대표 사진 (jpg · png · gif · webp, 5MB 이하)</label>
+                        <input type="file" class="form-control" id="imageFile" accept=".jpg,.jpeg,.png,.gif,.webp">
+                        <input type="hidden" id="imageUrl" value="${isEdit ? restaurant.imageUrl : ''}">
+                        <img id="imagePreview" src="${isEdit ? restaurant.imageUrl : ''}" alt="대표 사진 미리보기"
+                             class="img-thumbnail mt-2 ${isEdit && not empty restaurant.imageUrl ? '' : 'd-none'}" style="max-height: 200px;">
+                    </div>
+
                     <%-- ======================================= --%>
                     <%-- 버튼 영역                                  --%>
                     <%-- d-flex gap-2: 가로 배치 + 간격 8px        --%>
@@ -187,6 +197,24 @@
 // 수정 모드인지 여부를 JavaScript 변수에 저장
 const isEdit = ${isEdit};
 
+// [추가] 사진 파일을 고르면 바로 업로드 → 받은 주소를 imageUrl 칸에 넣고 미리보기 표시
+document.getElementById('imageFile').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const formData = new FormData();            // multipart/form-data 본문
+    formData.append('file', file);              // FileApiController 의 @RequestParam("file")
+    fetch('/api/files/upload', { method: 'POST', body: formData })
+        .then(res => res.json().then(body => ({ ok: res.ok, body: body })))
+        .then(r => {
+            if (!r.ok) { alert(r.body.error || '사진 업로드에 실패했습니다.'); return; }
+            document.getElementById('imageUrl').value = r.body.url;
+            const preview = document.getElementById('imagePreview');
+            preview.src = r.body.url;
+            preview.classList.remove('d-none');
+        })
+        .catch(() => alert('사진 업로드에 실패했습니다.'));
+});
+
 // ★ JSP EL ${restaurant.id} → 서버에서 맛집 ID 값으로 치환됨
 // 수정 모드일 때만 ID가 필요 (등록 모드면 빈 문자열)
 const restaurantId = '${isEdit ? restaurant.id : ""}';
@@ -207,7 +235,8 @@ document.getElementById('restaurantForm').addEventListener('submit', function(e)
         category: document.getElementById('category').value,
         address: document.getElementById('address').value.trim(),
         phone: document.getElementById('phone').value.trim(),
-        description: document.getElementById('description').value.trim()
+        description: document.getElementById('description').value.trim(),
+        imageUrl: document.getElementById('imageUrl').value || null   // [추가] 업로드한 사진 주소
     };
 
     // ★ 모드에 따라 API 주소와 HTTP 메서드를 다르게 설정

@@ -265,7 +265,7 @@ public class RestaurantService {
                 // .member(): 맛집을 등록한 회원 정보 설정 → 누가 등록했는지 기록
                 .member(loginMember)
                 // [Phase 7] .imageUrl(): 대표 이미지 URL 설정 (선택값)
-                .imageUrl(form.getImageUrl())
+                .imageUrl(validImageUrl(form.getImageUrl()))   // [수정] 업로드 주소 형식만 허용
                 // .build(): 위에서 설정한 값들로 최종 Restaurant 객체를 생성
                 .build();
 
@@ -316,7 +316,7 @@ public class RestaurantService {
                 HtmlSanitizer.sanitize(form.getAddress()),      // 새로운 주소 (XSS 방지)
                 form.getPhone(),                                // 새로운 전화번호
                 HtmlSanitizer.sanitize(form.getDescription()),  // 새로운 설명 (XSS 방지)
-                form.getImageUrl()                              // [Phase 7] 새로운 이미지 URL
+                validImageUrl(form.getImageUrl())               // [Phase 7] 새로운 이미지 URL ([수정] 형식 검사)
         );
 
         // [4단계] 수정된 엔티티를 응답 DTO로 변환 후 반환
@@ -434,6 +434,22 @@ public class RestaurantService {
     // │ 동작: ID로 맛집 조회 → 없으면 "맛집을 찾을 수 없습니다" 예외 발생       │
     // │ 사용처: findById, update, delete 등 여러 메서드에서 공통으로 사용       │
     // └─────────────────────────────────────────────────────────────────────┘
+    // [추가] 이미지 주소 검사: 비어 있으면 null, 아니면 FileService 가 돌려주는
+    //   "/uploads/UUID.확장자" 형식만 허용합니다. 화면이 이 값을 <img src="..."> 에 그대로 넣기 때문에
+    //   따옴표나 다른 사이트 주소가 들어가지 않게 막습니다(XSS 방지).
+    private static final java.util.regex.Pattern IMAGE_URL =
+            java.util.regex.Pattern.compile("^/uploads/[0-9a-fA-F-]{36}\\.(jpg|jpeg|png|gif|webp)$");
+
+    private String validImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        if (!IMAGE_URL.matcher(imageUrl).matches()) {
+            throw new IllegalArgumentException("사진 주소가 올바르지 않습니다. 사진은 업로드 버튼으로 올려 주세요.");
+        }
+        return imageUrl;
+    }
+
     private Restaurant getRestaurantOrThrow(Long id) {
         // restaurantRepository.findById(id): DB에서 해당 ID의 맛집 조회
         // → 결과는 Optional<Restaurant> (값이 있을 수도, 없을 수도 있음)
@@ -447,14 +463,18 @@ public class RestaurantService {
     // │ 매개변수: Restaurant restaurant — 검증 대상 맛집                      │
     // │          Member loginMember — 현재 로그인한 회원                      │
     // │ 리턴값:  void (없음) — 검증 실패 시 예외를 던짐                        │
-    // │ 동작: 맛집 등록자와 로그인 회원이 다르면 "수정 권한이 없습니다" 예외 발생  │
+    // │ 동작: 등록자도 관리자도 아니면 "수정 권한이 없습니다" 예외 발생        │
     // └─────────────────────────────────────────────────────────────────────┘
     private void validateOwner(Restaurant restaurant, Member loginMember) {
         // restaurant.getMember().getId(): 맛집을 등록한 회원의 ID
         // loginMember.getId(): 현재 로그인한 회원의 ID
         // !...equals(...): 두 ID가 같지 않으면 → 본인이 아니므로 권한 없음
-        if (!restaurant.getMember().getId().equals(loginMember.getId())) {
-            // 등록자가 아닌 사람이 수정하려고 하면 예외 발생
+        // [수정] 관리자(ADMIN)도 수정할 수 있게 합니다. 상세 화면은 관리자에게도 수정 버튼을 보여 주고,
+        //   삭제(delete)도 관리자를 허용하므로 같은 규칙으로 맞춥니다.
+        boolean isOwner = restaurant.getMember().getId().equals(loginMember.getId());
+        boolean isAdmin = loginMember.getRole().name().equals("ADMIN");
+        if (!isOwner && !isAdmin) {
+            // 등록자도 관리자도 아닌 사람이 수정하려고 하면 예외 발생
             throw new IllegalArgumentException("수정 권한이 없습니다.");
         }
     }

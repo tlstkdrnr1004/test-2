@@ -204,10 +204,23 @@ public class AdminApiController {
     @GetMapping("/reviews/reported")
     public ResponseEntity<List<Map<String, Object>>> reportedReviews(
             @LoginMember Member loginMember) {
+        // [수정] 이름대로 신고된(reported = true) 리뷰만 돌려줍니다. (예전에는 전체 리뷰를 돌려줌)
+        return ResponseEntity.ok(toReviewMaps(adminService.findReportedReviews()));
+    }
 
+    // ── [추가] 전체 리뷰 목록 ────────────────────────────────────
+    // URL: GET /api/admin/reviews
+    // 동작: 모든 리뷰를 신고 여부(reported)와 함께 반환합니다. (리뷰 관리 화면의 "전체" 버튼)
+    @GetMapping("/reviews")
+    public ResponseEntity<List<Map<String, Object>>> allReviews(
+            @LoginMember Member loginMember) {
+        return ResponseEntity.ok(toReviewMaps(adminService.findAllReviews()));
+    }
+
+    // 리뷰 엔티티 목록 → 화면용 Map 목록 (두 API 가 같은 형식을 쓰도록 한곳에 둠)
+    private List<Map<String, Object>> toReviewMaps(List<Review> reviews) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        List<Map<String, Object>> reviews = adminService.findAllReviews().stream()
+        return reviews.stream()
                 .map(r -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", r.getId());
@@ -216,11 +229,10 @@ public class AdminApiController {
                     map.put("memberNickname", r.getMember().getNickname());
                     map.put("restaurantName", r.getRestaurant().getName());
                     map.put("createdAt", r.getCreatedAt().format(formatter));
+                    map.put("reported", r.isReported());
                     return map;
                 })
                 .toList();
-
-        return ResponseEntity.ok(reviews);
     }
 
     // ── 리뷰 삭제 ───────────────────────────────────────────────

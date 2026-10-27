@@ -32,10 +32,12 @@
 
 ### 주요 기능
 
-- **회원**: 가입, 로그인/로그아웃 (세션 기반)
-- **맛집**: 등록, 수정, 삭제, 목록 조회, 검색, 카테고리 필터
-- **리뷰**: 작성, 삭제, 별점(1~5), 평균 별점 표시
+- **회원**: 가입, 로그인/로그아웃 (Spring Security 세션 + API 용 JWT), 소셜 로그인(카카오·네이버·구글, 선택)
+- **맛집**: 등록, 수정, 삭제, 목록 조회, 검색, 카테고리 필터, 대표 사진 업로드
+- **리뷰**: 작성, 삭제, 별점(1~5), 평균 별점 표시, 신고, 답글
 - **찜**: 맛집 찜하기/취소, 내 찜 목록
+- **마이페이지**: 활동 통계, 내 맛집·리뷰, 닉네임·비밀번호 변경
+- **관리자**: 통계, 회원 권한 변경·삭제, 맛집·리뷰 삭제, 신고된 리뷰 보기
 
 ---
 
@@ -45,11 +47,12 @@
 |------|------|
 | Language | Java 21 |
 | Framework | Spring Boot 3.4.3 |
+| Security | Spring Security, JWT (jjwt 0.12.6), OAuth2 Client (선택) |
 | ORM | Spring Data JPA (Hibernate) |
 | View | JSP + JSTL |
 | Database | H2 (인메모리) |
-| Build | Gradle (Groovy) |
-| CSS | Bootstrap 5 |
+| Build | Gradle 8.12.1 (Groovy) |
+| CSS | Bootstrap 5.3.3 |
 | CI/CD | GitHub Actions |
 | IDE | IntelliJ IDEA |
 
@@ -71,16 +74,21 @@ git clone https://github.com/your-org/my-matzip.git
 # 2. 프로젝트 폴더로 이동
 cd my-matzip
 
-# 3. 실행 (Gradle Wrapper 사용)
+# 3. 실행 (Gradle Wrapper 사용, Windows 는 gradlew.bat bootRun)
 ./gradlew bootRun
 ```
+
+- `./gradlew: Permission denied` 가 나오면 `chmod +x gradlew` 후 다시 실행합니다.
+- **JWT 비밀키**: 환경 변수 `JWT_SECRET`(32자 이상)을 넣고 실행합니다. 없으면 실행할 때마다 임의 키를 만들어 씁니다(개발용, 서버를 다시 켜면 이전 토큰은 무효).
+- **소셜 로그인(선택)**: 키를 발급받아 환경 변수(`KAKAO_CLIENT_ID` 등)를 넣고 프로필을 켜서 실행합니다. 예: `./gradlew bootRun --args='--spring.profiles.active=kakao,naver'`. 설정 방법은 `src/main/resources/application-kakao.properties` · `application-naver.properties` · `application-google.properties` 의 주석을 봅니다.
+- 업로드한 사진은 프로젝트 폴더의 `uploads/` 에 저장됩니다(Git 에는 올리지 않음).
 
 ### 접속 주소
 
 | 페이지 | URL |
 |--------|-----|
-| 메인 페이지 | http://localhost:8080 |
-| H2 콘솔 | http://localhost:8080/h2-console |
+| 메인 페이지 | http://localhost:8082 |
+| H2 콘솔 | http://localhost:8082/h2-console |
 
 ### H2 콘솔 접속 정보
 
@@ -96,71 +104,38 @@ Password: (비워두기)
 
 ```
 my-matzip/
-├── build.gradle
-├── settings.gradle
-├── .gitignore
+├── build.gradle · settings.gradle · gradlew · .gitignore
 ├── .github/workflows/          ← CI/CD
-│   ├── ci.yml
-│   └── code-review.yml
+│   ├── ci.yml                   (빌드 + 테스트)
+│   └── code-review.yml          (PR 변경량 요약 댓글)
+├── docs/
+│   ├── my-matzip-tutorial.html  ← 처음부터 완성 자습서
+│   ├── API_SPEC.md · TEAM_GUIDE.md · TODO_BY_ROLE.md
 ├── src/main/
 │   ├── java/com/example/mymatzip/
-│   │   ├── MyMatzipApplication.java     ← 메인 클래스
-│   │   ├── config/
-│   │   │   ├── WebMvcConfig.java        ← MVC 설정
-│   │   │   └── LoginInterceptor.java    ← 로그인 체크
-│   │   ├── entity/                      ← ✅ 제공됨
-│   │   │   ├── Member.java
-│   │   │   ├── Restaurant.java
-│   │   │   ├── Review.java
-│   │   │   ├── Wishlist.java
-│   │   │   ├── Category.java (Enum)
-│   │   │   └── Role.java (Enum)
-│   │   ├── repository/                  ← ✅ 제공됨
-│   │   │   ├── MemberRepository.java
-│   │   │   ├── RestaurantRepository.java
-│   │   │   ├── ReviewRepository.java
-│   │   │   └── WishlistRepository.java
-│   │   ├── dto/                         ← ✅ 제공됨
-│   │   │   ├── MemberSignupForm.java
-│   │   │   ├── LoginForm.java
-│   │   │   ├── RestaurantForm.java
-│   │   │   ├── RestaurantResponse.java
-│   │   │   ├── ReviewForm.java
-│   │   │   └── ReviewResponse.java
-│   │   ├── service/                     ← ❌ 학생 구현
-│   │   │   ├── MemberService.java
-│   │   │   ├── RestaurantService.java
-│   │   │   ├── ReviewService.java
-│   │   │   └── WishlistService.java
-│   │   └── controller/                  ← ❌ 학생 구현
-│   │       ├── api/
-│   │       │   ├── MemberApiController.java
-│   │       │   ├── RestaurantApiController.java
-│   │       │   ├── ReviewApiController.java
-│   │       │   └── WishlistApiController.java
-│   │       └── view/
-│   │           ├── HomeController.java
-│   │           ├── MemberViewController.java
-│   │           └── RestaurantViewController.java
+│   │   ├── MyMatzipApplication.java
+│   │   ├── config/              WebMvcConfig, GlobalExceptionHandler, DataInitializer
+│   │   ├── config/security/     SecurityConfig, PasswordEncoderConfig, CustomUserDetails(Service),
+│   │   │                        JwtTokenProvider, JwtAuthenticationFilter, LoginMember(+ArgumentResolver),
+│   │   │                        GlobalModelAdvice, OAuthAttributes, CustomOAuth2UserService, OAuth2LoginSuccessHandler
+│   │   ├── entity/              Member, Role, Restaurant, Category, Review, Reply, Wishlist, Image
+│   │   ├── repository/          Member, Restaurant, Review, Reply, Wishlist, Image (…Repository)
+│   │   ├── dto/                 MemberSignupForm, LoginForm, Restaurant/Review/Reply Form·Response, PageResponse
+│   │   ├── service/             Member, Restaurant, Review, Reply, Wishlist, Admin, File (…Service)
+│   │   ├── util/                HtmlSanitizer
+│   │   └── controller/
+│   │       ├── api/             Member, Restaurant, Review, Reply, Wishlist, MyPage, Admin, File (…ApiController)
+│   │       └── view/            Home, Member, Restaurant, MyPage, Admin (…ViewController)
 │   ├── resources/
 │   │   ├── application.properties
-│   │   └── data.sql                     ← 테스트 데이터
+│   │   ├── application-kakao/naver/google.properties  ← 소셜 로그인 (선택)
+│   │   └── data.sql             ← 예제 데이터
 │   └── webapp/WEB-INF/views/
-│       ├── common/
-│       │   ├── header.jsp               ← ✅ 제공됨
-│       │   └── footer.jsp               ← ✅ 제공됨
-│       ├── home.jsp                     ← ✅ 제공됨
-│       ├── member/                      ← ❌ 학생 구현
-│       │   ├── login.jsp
-│       │   └── signup.jsp
-│       └── restaurant/                  ← ❌ 학생 구현
-│           ├── list.jsp
-│           ├── detail.jsp
-│           └── form.jsp
-└── docs/
-    ├── API_SPEC.md                      ← API 명세서
-    ├── TEAM_GUIDE.md                    ← 팀 작업 가이드
-    └── TODO_BY_ROLE.md                  ← 역할별 체크리스트
+│       ├── common/ (header, footer) · home.jsp
+│       ├── member/ (login, signup) · restaurant/ (list, detail, form)
+│       ├── wishlist/list.jsp · mypage/dashboard.jsp
+│       └── admin/ (dashboard, members, restaurants, reviews)
+└── src/test/java/com/example/mymatzip/MyMatzipApplicationTests.java
 ```
 
 ---
@@ -200,6 +175,11 @@ my-matzip/
 | Restaurant → Review | 1:N (한 맛집에 여러 리뷰) |
 | Member → Wishlist | 1:N (한 회원이 여러 맛집 찜) |
 | Restaurant → Wishlist | 1:N (한 맛집이 여러 회원에게 찜됨) |
+| Review → Reply | 1:N (한 리뷰에 여러 답글) |
+| Member → Reply | 1:N (한 회원이 여러 답글 작성) |
+
+- 위 외래 키는 모두 `ON DELETE CASCADE` 입니다. 맛집을 지우면 그 맛집의 리뷰·답글·찜이, 회원을 지우면 그 회원의 맛집·리뷰·답글·찜이 함께 지워집니다.
+- `restaurant.image_url` 에 대표 사진 주소, `image` 테이블에 업로드 기록이 저장됩니다.
 
 ---
 
@@ -210,20 +190,25 @@ my-matzip/
 | Method | URL | 설명 | 담당 |
 |--------|-----|------|------|
 | POST | /api/members/signup | 회원가입 | A |
-| POST | /api/members/login | 로그인 | A |
+| POST | /api/members/login | 로그인 (세션 + JWT 발급) | A |
 | GET | /api/members/logout | 로그아웃 | A |
 | GET | /api/restaurants | 맛집 목록 | B |
 | GET | /api/restaurants/{id} | 맛집 상세 | B |
 | POST | /api/restaurants | 맛집 등록 | B |
-| PUT | /api/restaurants/{id} | 맛집 수정 | B |
-| DELETE | /api/restaurants/{id} | 맛집 삭제 | B |
+| PUT | /api/restaurants/{id} | 맛집 수정 (등록자·관리자) | B |
+| DELETE | /api/restaurants/{id} | 맛집 삭제 (등록자·관리자) | B |
 | GET | /api/restaurants/search | 맛집 검색 | B |
+| POST | /api/files/upload | 사진 업로드 | B |
 | GET | /api/reviews/restaurant/{id} | 리뷰 목록 | C |
 | POST | /api/reviews | 리뷰 작성 | C |
 | DELETE | /api/reviews/{id} | 리뷰 삭제 | C |
+| POST | /api/reviews/{id}/report | 리뷰 신고 | C |
+| GET · POST · DELETE | /api/replies/review/{id} · /api/replies · /api/replies/{id} | 답글 목록·작성·삭제 | C |
 | GET | /api/wishlists | 찜 목록 | D |
 | POST | /api/wishlists/{restaurantId} | 찜 추가 | D |
 | DELETE | /api/wishlists/{restaurantId} | 찜 취소 | D |
+| GET · PUT | /api/mypage/** | 통계·내 글·닉네임·비밀번호 | A |
+| GET · PUT · DELETE | /api/admin/** | 관리자 기능 (ADMIN 만) | D |
 
 ---
 

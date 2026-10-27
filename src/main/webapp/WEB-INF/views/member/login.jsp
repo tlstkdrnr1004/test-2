@@ -98,6 +98,18 @@
                     </button>
                 </form>
 
+                <%-- [추가] 소셜 로그인 버튼: 켜져 있는 서비스만 보입니다(MemberViewController 의 oauthProviders). --%>
+                <%--   /oauth2/authorization/kakao 같은 주소는 Spring Security 가 처리해 그 서비스의 로그인 화면으로 보냅니다. --%>
+                <c:if test="${not empty oauthProviders}">
+                    <div class="d-grid gap-2 mb-3">
+                        <c:forEach var="provider" items="${oauthProviders}">
+                            <a href="/oauth2/authorization/${provider}" class="btn btn-outline-dark">
+                                ${provider == 'kakao' ? '카카오' : provider == 'naver' ? '네이버' : provider == 'google' ? '구글' : provider}로 로그인
+                            </a>
+                        </c:forEach>
+                    </div>
+                </c:if>
+
                 <%-- 회원가입 페이지로의 링크 --%>
                 <div class="text-center">
                     <span class="text-muted">계정이 없으신가요?</span>

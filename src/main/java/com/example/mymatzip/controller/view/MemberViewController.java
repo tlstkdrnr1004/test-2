@@ -40,7 +40,11 @@ package com.example.mymatzip.controller.view;
 
 // @Controller: 이 클래스가 뷰(View) 컨트롤러임을 선언하는 어노테이션
 // 메서드의 반환값(String)이 JSP 파일의 이름으로 해석됩니다.
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 
 // @GetMapping: HTTP GET 요청을 처리하는 메서드에 붙이는 어노테이션
 // GET = 페이지를 "보여달라"는 요청 (브라우저 주소창에 URL 입력)
@@ -66,10 +70,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 // 로그인/회원가입의 실제 처리는 MemberApiController + MemberService가 담당합니다.
 public class MemberViewController {
 
+    // [추가] 소셜 로그인 등록 정보 (application-kakao/naver/google.properties 를 켰을 때만 존재)
+    private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepository;
+
+    public MemberViewController(ObjectProvider<ClientRegistrationRepository> clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
+
     // ── GET /members/login ──────────────────────────────────
     // 로그인 페이지: 이메일과 비밀번호를 입력하는 화면을 보여줌
     // 요청 예시: GET http://localhost:8080/members/login
-    //   (브라우저 주소창에 직접 입력하거나, LoginInterceptor에 의해 리다이렉트될 때)
+    //   (브라우저 주소창에 직접 입력하거나, 로그인이 필요한 주소에서 Spring Security 가 리다이렉트할 때)
     // 응답: member/login.jsp 페이지를 HTML로 렌더링하여 반환
     //
     // @GetMapping("/login"): GET 방식으로 "/members/login" 요청이 오면 실행
@@ -77,7 +88,18 @@ public class MemberViewController {
     // 반환값: String "member/login"
     //   → /WEB-INF/views/member/login.jsp 파일을 렌더링
     @GetMapping("/login")
-    public String loginPage() {
+    public String loginPage(Model model) {
+        // [추가] 켜져 있는 소셜 로그인 목록(예: ["kakao", "naver"])을 화면에 넘겨 버튼을 그립니다.
+        //   등록 정보가 없으면 빈 목록 → 버튼이 보이지 않습니다.
+        java.util.List<String> oauthProviders = new java.util.ArrayList<>();
+        ClientRegistrationRepository registrations = clientRegistrationRepository.getIfAvailable();
+        if (registrations instanceof Iterable<?> iterable) {
+            for (Object registration : iterable) {
+                oauthProviders.add(((ClientRegistration) registration).getRegistrationId());
+            }
+        }
+        model.addAttribute("oauthProviders", oauthProviders);
+
         // "member/login"을 반환하면:
         //   뷰 리졸버(ViewResolver)가 prefix + "member/login" + suffix 조합
         //   → /WEB-INF/views/member/login.jsp 파일을 찾아서 HTML로 렌더링

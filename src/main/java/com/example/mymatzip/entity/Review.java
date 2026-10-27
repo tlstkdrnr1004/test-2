@@ -179,6 +179,8 @@ public class Review {
     //   [사용 화면] 리뷰 목록 -- "작성자: 맛집탐험가" 표시
     //   [사용 화면] 리뷰 삭제 -- 본인이 작성한 리뷰인지 확인 (member_id 비교)
     //   [사용 화면] 관리자(ADMIN)는 다른 사람의 리뷰도 삭제 가능
+    // [수정] 회원이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "member_id", nullable = false)
 
     // Member member: 이 리뷰를 작성한 회원 객체
