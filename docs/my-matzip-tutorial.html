@@ -14570,7 +14570,7 @@ public class AdminViewController {
     <dt>이 파일이 하는 일</dt><dd>관리자 대시보드입니다. 통계 숫자 3개를 fetch 로 불러오고 관리 화면 링크를 보여 줍니다.</dd>
     <dt>요청·응답 흐름에서</dt><dd>GET /admin → 이 JSP → fetch GET /api/admin/stats.</dd>
   </dl>
-  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">≡</span>JSP 문법 → 실행 결과</h4><table class="xt xt-2"><thead><tr><th>문법</th><th>결과</th></tr></thead><tbody><tr><td data-label="문법"><code>data.memberCount</code></td><td data-label="결과">API 응답 JSON 에 이 키가 없어 <code>undefined</code> → 칸이 빈 글자가 됨</td></tr><tr><td data-label="문법">API 가 실제로 보내는 JSON</td><td data-label="결과"><code>{"totalMembers":3,"totalReviews":10,"totalRestaurants":6}</code> (AdminService.getStats 의 키)</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>원본 코드의 문제로, 통계 숫자 3칸이 비어 보입니다(실행 확인). 이 JSP 의 <code>data.memberCount · data.restaurantCount · data.reviewCount</code> 를 <code>data.totalMembers · data.totalRestaurants · data.totalReviews</code> 로 바꾸면 숫자가 나옵니다(14장).</p></div></div></details>
+  <details class="xp" open><summary><span class="xp-badge">코드 해설</span>객체 · 반환값 · 문법 흐름</summary><div class="xp-body"><div class="xp-sec"><h4><span class="xp-ic">≡</span>JSP 문법 → 실행 결과</h4><table class="xt xt-2"><thead><tr><th>문법</th><th>결과</th></tr></thead><tbody><tr><td data-label="문법"><code>fetch('/api/admin/stats').then(res => res.json())</code></td><td data-label="결과">JSON <code>{"totalMembers":3,"totalReviews":10,"totalRestaurants":6}</code> → JavaScript 객체 (실행 확인)</td></tr><tr><td data-label="문법"><code>data.totalMembers</code></td><td data-label="결과">3 → <code>#statMembers</code> 칸에 표시. 키 이름이 AdminService.getStats() 의 Map 키와 같아야 합니다</td></tr></tbody></table></div><div class="xp-tip"><b>주의</b><p>예전 원본은 <code>data.memberCount</code> 처럼 다른 키를 읽어 숫자 칸이 비어 보였습니다. 이 저장소에서는 API 키 이름(<code>totalMembers · totalRestaurants · totalReviews</code>)에 맞게 고쳤습니다.</p></div></div></details>
   <div class="codebar"><span><span class="dots"><i></i><i></i><i></i></span>dashboard.jsp · 92줄</span>
     <button class="copy" data-target="f71c"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>복사</button></div>
   <details class="codewrap"><summary>코드 펼치기 / 접기 (92줄 · 강사 주석 포함)</summary>
@@ -14655,9 +14655,9 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/stats')
         .then(function(res) { return res.json(); })
         .then(function(data) {
-            document.getElementById('statMembers').textContent = data.memberCount;
-            document.getElementById('statRestaurants').textContent = data.restaurantCount;
-            document.getElementById('statReviews').textContent = data.reviewCount;
+            document.getElementById('statMembers').textContent = data.totalMembers;
+            document.getElementById('statRestaurants').textContent = data.totalRestaurants;
+            document.getElementById('statReviews').textContent = data.totalReviews;
         })
         .catch(function() {
             console.error('통계 로드 실패');
@@ -15098,7 +15098,7 @@ function deleteReview(id) {
 
 <div class="check"><h3 id="s-c10">✅ 확인 단계 · 10장 · 관리자 (완성 기준 ③)</h3><ol><li>Gradle <code>classes</code> · <code>test</code> → BUILD SUCCESSFUL.</li>
 <li>user1@test.com 으로 로그인한 상태에서 http://localhost:8082/admin → 403 오류 화면 (ADMIN 아님).</li>
-<li>로그아웃 → admin@test.com / 1234 로그인 → 메뉴 <b>관리자</b> → 관리자 대시보드가 열립니다. 통계 숫자 칸은 비어 보입니다(원본 문제, 위 dashboard.jsp 주의 참고). 숫자는 http://localhost:8082/api/admin/stats 에 직접 접속하면 <code>{"totalMembers":3,…}</code> 로 확인할 수 있습니다(서버를 켠 직후 기준 회원 3 · 맛집 6 · 리뷰 10).</li>
+<li>로그아웃 → admin@test.com / 1234 로그인 → 메뉴 <b>관리자</b> → 전체 회원 3 · 전체 맛집 6 · 전체 리뷰 10 (서버를 켠 직후 기준).</li>
 <li>회원 관리: user2 의 역할을 ADMIN 으로 → “역할이 변경되었습니다.”. 리뷰 관리: 리뷰 하나 삭제 → 표에서 사라짐.</li>
 <li>맛집 관리: 리뷰가 없는 맛집(직접 등록한 것)을 삭제 → 성공.</li>
 <li><b>전체 흐름</b>: 새 계정 가입 → 로그인 → 맛집 등록 → 목록·검색 → 상세 → 리뷰 → 답글 → 찜 → 마이페이지 → 로그아웃 → 관리자 로그인 → 관리자 화면. 모두 동작하면 완성입니다.</li></ol></div>
@@ -16230,7 +16230,7 @@ jobs:
 <tr><td>로그인 후 메뉴가 바뀌지 않음</td><td>GlobalModelAdvice 누락 또는 MemberApiController 의 saveContext 줄 누락</td><td>두 파일 다시 붙여 넣기</td></tr>
 <tr><td>/admin 접속 시 403</td><td>ADMIN 이 아님</td><td>admin@test.com 으로 로그인. 또는 관리자 화면에서 역할을 ADMIN 으로 바꾼 뒤 다시 로그인</td></tr>
 <tr><td>리뷰·찜이 달린 맛집 삭제 시 <b>Internal Server Error</b> / 외래 키 오류 알림</td><td>원본 코드의 문제. Review · Wishlist 가 맛집을 참조하는데 맛집만 DELETE 함</td><td>원본 그대로 두면 리뷰가 없는 맛집만 지울 수 있습니다. 고치려면 RestaurantService.delete() / AdminService.deleteRestaurant() 에서 그 맛집의 찜·리뷰(·답글)를 먼저 지우는 코드를 추가합니다(강사와 상의)</td></tr>
-<tr><td>관리자 대시보드의 통계 숫자 3칸이 비어 있음</td><td>원본 코드의 문제. dashboard.jsp 가 <code>memberCount</code> 등의 키를 읽는데 API 는 <code>totalMembers</code> 등으로 보냄</td><td>원본 그대로면 비어 보입니다. 고치려면 dashboard.jsp 의 세 키를 <code>totalMembers · totalRestaurants · totalReviews</code> 로 바꿉니다</td></tr>
+<tr><td>관리자 대시보드의 통계 숫자 칸이 비어 있음</td><td>dashboard.jsp 가 읽는 JSON 키와 API 가 보내는 키가 다름</td><td>dashboard.jsp 의 <code>data.totalMembers · data.totalRestaurants · data.totalReviews</code> 줄을 다시 붙여 넣기. F12 → Network 에서 /api/admin/stats 응답 확인</td></tr>
 <tr><td>글·리뷰가 있는 회원 삭제 시 오류</td><td>위와 같은 외래 키 이유</td><td>새로 가입한 빈 계정으로 시험</td></tr>
 <tr><td>닉네임을 바꿨는데 머리말은 옛 닉네임 · 두 번째 비밀번호 변경이 “현재 비밀번호 불일치”</td><td>세션에 저장된 Member 가 로그인 순간의 값 (원본 동작)</td><td>로그아웃 후 다시 로그인하면 새 값이 반영됩니다</td></tr>
 <tr><td>화면 모양이 깨지고(디자인 없음) 모바일 메뉴가 안 열림</td><td>header.jsp 가 인터넷(CDN cdn.jsdelivr.net)에서 Bootstrap 을 불러오는데 인터넷이 막힘</td><td>인터넷 연결 확인. 기능(fetch)은 CDN 없이도 동작합니다</td></tr>

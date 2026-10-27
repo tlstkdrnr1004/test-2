@@ -79,9 +79,9 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/stats')
         .then(function(res) { return res.json(); })
         .then(function(data) {
-            document.getElementById('statMembers').textContent = data.memberCount;
-            document.getElementById('statRestaurants').textContent = data.restaurantCount;
-            document.getElementById('statReviews').textContent = data.reviewCount;
+            document.getElementById('statMembers').textContent = data.totalMembers;
+            document.getElementById('statRestaurants').textContent = data.totalRestaurants;
+            document.getElementById('statReviews').textContent = data.totalReviews;
         })
         .catch(function() {
             console.error('통계 로드 실패');
