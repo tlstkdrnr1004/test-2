@@ -53,6 +53,11 @@
         <%-- justify-content-between → 양쪽 끝으로 배치                --%>
         <%-- align-items-start → 위쪽 정렬                              --%>
         <%-- ======================================================= --%>
+        <%-- [추가] 대표 사진이 있으면 맨 위에 표시 --%>
+        <c:if test="${not empty restaurant.imageUrl}">
+            <img src="${restaurant.imageUrl}" alt="${restaurant.name}" class="img-fluid rounded mb-3"
+                 style="max-height: 320px; width: 100%; object-fit: cover;">
+        </c:if>
         <div class="d-flex justify-content-between align-items-start">
             <div>
                 <%-- 맛집 이름 (h2 = 큰 제목) --%>

@@ -30,9 +30,9 @@ package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) �
 // 이 enum이 사용되는 곳들:
 //   1. Member 엔티티의 role 필드 -- 회원이 어떤 역할인지 저장
 //   2. MemberService -- 회원가입 시 기본 역할을 USER로 설정
-//   3. RestaurantService -- 맛집 삭제 시 ADMIN인지 확인 (ADMIN은 모든 맛집 삭제 가능)
+//   3. RestaurantService -- 맛집 수정·삭제 시 ADMIN인지 확인 (ADMIN은 모든 맛집 수정·삭제 가능)
 //   4. JSP 화면 -- 관리자에게만 "삭제" 버튼 표시
-//   5. LoginInterceptor -- 로그인한 회원의 권한을 체크
+//   5. SecurityConfig -- /admin/** 주소는 ADMIN 권한만 접근 가능
 // ============================================================
 
 // public: 다른 파일(클래스)에서도 이 enum을 사용할 수 있도록 공개합니다.

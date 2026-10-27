@@ -111,7 +111,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // [5단계] CustomUserDetails로 감싸서 반환
         // Spring Security가 이 객체를 통해 인증 정보를 관리함
-        return new CustomUserDetails(member);
+        // [수정] 소셜 서비스가 준 원본 정보도 함께 담아 둡니다 (OAuth2User.getAttributes()).
+        CustomUserDetails userDetails = new CustomUserDetails(member);
+        userDetails.setAttributes(oAuth2User.getAttributes());
+        return userDetails;
     }
 
     // ── saveOrUpdate() 메서드 ─────────────────────────────────────
@@ -128,11 +131,28 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private Member saveOrUpdate(OAuthAttributes attributes, String registrationId) {
 
         // 이메일로 기존 회원 조회
-        Optional<Member> existingMember = memberRepository.findByEmail(attributes.getEmail());
+        // [수정] ① 같은 소셜 계정(서비스 + 고유 번호)으로 가입한 회원이 있으면 그 회원
+        Optional<Member> socialMember =
+                memberRepository.findByProviderAndProviderId(registrationId, attributes.getProviderId());
+        if (socialMember.isPresent()) {
+            return socialMember.get();
+        }
+
+        // [수정] ② 이메일을 받지 못한 경우(제공 동의 안 함) 회원 테이블의 email 이 비면 안 되므로
+        //   "서비스_고유번호@social.local" 형태의 대체 이메일을 씁니다.
+        String email = attributes.getEmail();
+        if (email == null || email.isBlank()) {
+            email = registrationId + "_" + attributes.getProviderId() + "@social.local";
+        }
+
+        // ③ 같은 이메일로 이미 가입한 회원이 있으면 그 회원에 소셜 계정을 연결
+        Optional<Member> existingMember = memberRepository.findByEmail(email);
 
         if (existingMember.isPresent()) {
             // 기존 회원이 있으면 그대로 반환 (소셜 로그인으로 다시 접속한 것)
-            return existingMember.get();
+            Member member = existingMember.get();
+            member.linkSocial(registrationId, attributes.getProviderId());   // [수정] 다음부터 ① 로 찾음
+            return memberRepository.save(member);
         }
 
         // 새 회원이면 자동 회원가입
@@ -153,13 +173,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // Member 엔티티 생성 (빌더 패턴 사용)
         Member newMember = Member.builder()
-                .email(attributes.getEmail())    // 소셜 서비스에서 가져온 이메일
+                .email(email)                     // 소셜 서비스에서 가져온 이메일 (없으면 대체 이메일)
                 .password(randomPassword)         // 랜덤 암호화 비밀번호
                 .nickname(nickname)               // 소셜 서비스에서 가져온 이름
                 .role(Role.USER)                  // 기본 역할: 일반 사용자
                 .build();
 
         // DB에 저장 후 반환
+        newMember.linkSocial(registrationId, attributes.getProviderId());   // [추가] 소셜 계정 정보 저장
         return memberRepository.save(newMember);
     }
 }

@@ -100,7 +100,7 @@ function changeRole(memberId, role) {
 }
 
 function deleteMember(memberId) {
-    if (!confirm('이 회원을 삭제하시겠습니까?')) return;
+    if (!confirm('이 회원을 삭제하시겠습니까? 이 회원이 등록한 맛집과 작성한 리뷰·답글·찜도 모두 삭제됩니다.')) return;
 
     fetch('/api/admin/members/' + memberId, { method: 'DELETE' })
         .then(function(res) { return res.json(); })

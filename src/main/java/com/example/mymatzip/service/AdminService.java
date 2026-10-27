@@ -113,6 +113,13 @@ public class AdminService {
         return reviewRepository.findAll();
     }
 
+    // ── [추가] 신고된 리뷰만 조회 ────────────────────────────────
+    // 반환값: List<Review> — reported = true 인 리뷰 목록
+    // 사용처: 관리자 > 리뷰 관리 > "신고된 리뷰" 버튼 (GET /api/admin/reviews/reported)
+    public List<Review> findReportedReviews() {
+        return reviewRepository.findByReportedTrue();
+    }
+
     // ── 회원 역할 변경 ──────────────────────────────────────────
     // 동작: 특정 회원의 역할(Role)을 변경합니다 (USER ↔ ADMIN)
     // 매개변수: memberId — 변경할 회원의 ID, role — 새로운 역할

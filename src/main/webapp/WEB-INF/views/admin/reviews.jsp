@@ -11,6 +11,12 @@
     </a>
 </div>
 
+<%-- [추가] 전체 / 신고된 리뷰만 보기 버튼 --%>
+<div class="btn-group mb-3" role="group">
+    <button type="button" id="btnAll" class="btn btn-primary btn-sm" onclick="loadReviews(false)">전체</button>
+    <button type="button" id="btnReported" class="btn btn-outline-danger btn-sm" onclick="loadReviews(true)">신고된 리뷰</button>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="table-responsive">
@@ -35,12 +41,18 @@
 </div>
 
 <script>
+// [수정] 현재 보고 있는 목록 (false = 전체, true = 신고된 리뷰만)
+var onlyReported = false;
+
 document.addEventListener('DOMContentLoaded', function() {
-    loadReviews();
+    loadReviews(false);
 });
 
-function loadReviews() {
-    fetch('/api/admin/reviews/reported')
+function loadReviews(reportedOnly) {
+    if (reportedOnly !== undefined) onlyReported = reportedOnly;
+    document.getElementById('btnAll').className = 'btn btn-sm ' + (onlyReported ? 'btn-outline-primary' : 'btn-primary');
+    document.getElementById('btnReported').className = 'btn btn-sm ' + (onlyReported ? 'btn-danger' : 'btn-outline-danger');
+    fetch(onlyReported ? '/api/admin/reviews/reported' : '/api/admin/reviews')
         .then(function(res) { return res.json(); })
         .then(function(data) {
             var tbody = document.getElementById('reviewTableBody');
@@ -63,7 +75,7 @@ function loadReviews() {
 
                 html += '<tr>' +
                     '<td>' + r.id + '</td>' +
-                    '<td>' + content + '</td>' +
+                    '<td>' + (r.reported ? '<span class="badge bg-danger me-1">신고</span>' : '') + content + '</td>' +
                     '<td>' + stars + '</td>' +
                     '<td>' + r.memberNickname + '</td>' +
                     '<td>' + r.restaurantName + '</td>' +

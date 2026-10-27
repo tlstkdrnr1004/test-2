@@ -218,6 +218,10 @@
                 <div class="col-md-6 col-lg-4">
                     <%-- card h-100: 카드 컴포넌트, 높이 100% (같은 줄 카드 높이 통일) --%>
                     <div class="card h-100">
+                        <%-- [추가] 대표 사진 --%>
+                        <c:if test="${not empty restaurant.imageUrl}">
+                            <img src="${restaurant.imageUrl}" class="card-img-top" alt="${restaurant.name}" style="height: 180px; object-fit: cover;">
+                        </c:if>
                         <%-- card-body: 카드 내부 패딩이 있는 영역 --%>
                         <div class="card-body">
                             <%-- d-flex: 가로 배치 --%>

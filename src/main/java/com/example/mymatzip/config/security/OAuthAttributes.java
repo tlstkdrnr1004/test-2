@@ -51,17 +51,23 @@ public class OAuthAttributes {
     // email: 사용자 이메일
     private String email;
 
+    // [추가] 소셜 서비스 안에서의 회원 고유 번호 (구글 sub, 카카오 id, 네이버 response.id)
+    //   이메일 제공에 동의하지 않은 사용자도 이 값으로 같은 회원을 다시 찾을 수 있습니다.
+    private String providerId;
+
     // ── 생성자 (private) ──────────────────────────────────────
     // 외부에서 직접 new로 생성하지 못하게 하고,
     // 아래의 정적 팩토리 메서드(of, ofGoogle, ofKakao, ofNaver)를 통해서만 생성
     private OAuthAttributes(Map<String, Object> attributes,
                             String nameAttributeKey,
                             String name,
-                            String email) {
+                            String email,
+                            String providerId) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.name = name;
         this.email = email;
+        this.providerId = providerId;
     }
 
     // ── 정적 팩토리 메서드: 소셜 로그인 제공자별 분기 ───────────
@@ -100,7 +106,8 @@ public class OAuthAttributes {
                 attributes,
                 userNameAttributeName,
                 (String) attributes.get("name"),    // Google은 "name" 키에 이름이 있음
-                (String) attributes.get("email")    // Google은 "email" 키에 이메일이 있음
+                (String) attributes.get("email"),   // Google은 "email" 키에 이메일이 있음
+                String.valueOf(attributes.get("sub"))  // [추가] Google 고유 번호
         );
     }
 
@@ -124,13 +131,16 @@ public class OAuthAttributes {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
 
         // kakao_account → profile 안의 데이터를 꺼냄
-        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        // [수정] 사용자가 정보 제공에 동의하지 않으면 kakao_account · profile 이 없을 수 있어 빈 Map 으로 대신합니다.
+        if (kakaoAccount == null) kakaoAccount = Map.of();
+        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.getOrDefault("profile", Map.of());
 
         return new OAuthAttributes(
                 attributes,
                 userNameAttributeName,
                 (String) profile.get("nickname"),       // profile.nickname에서 이름 추출
-                (String) kakaoAccount.get("email")      // kakao_account.email에서 이메일 추출
+                (String) kakaoAccount.get("email"),     // kakao_account.email에서 이메일 추출
+                String.valueOf(attributes.get("id"))    // [추가] 카카오 고유 번호 (최상위 id)
         );
     }
 
@@ -156,7 +166,8 @@ public class OAuthAttributes {
                 attributes,
                 userNameAttributeName,
                 (String) response.get("name"),     // response.name에서 이름 추출
-                (String) response.get("email")     // response.email에서 이메일 추출
+                (String) response.get("email"),    // response.email에서 이메일 추출
+                String.valueOf(response.get("id"))  // [추가] 네이버 고유 번호 (response.id)
         );
     }
 }

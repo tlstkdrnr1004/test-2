@@ -78,6 +78,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 // AntPathRequestMatcher: URL 패턴 매칭 — 로그아웃 요청 GET/POST 모두 허용하기 위해 사용
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+// [추가] 소셜 로그인(OAuth2) 설정용 — 11장의 클래스 대신 스프링 인터페이스 타입으로 받아서,
+//   11장 파일이 없어도 이 파일이 컴파일되고 실행됩니다.
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
 // ── @Configuration ───────────────────────────────────────────
 // 이 클래스가 스프링의 설정 파일임을 선언합니다.
 @Configuration
@@ -102,6 +111,15 @@ public class SecurityConfig {
     // JwtAuthenticationFilter: JWT 토큰을 검증하는 필터
     // API 요청(/api/**)에서 Authorization 헤더의 JWT 토큰을 확인합니다.
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    // [추가] 소셜 로그인 관련 빈 (있을 때만 사용)
+    // ObjectProvider: 빈이 없어도 오류 없이 주입되고, getIfAvailable() 로 있으면 꺼내 씀
+    //   - clientRegistrationRepository: application-kakao/naver/google.properties 를 켰을 때만 스프링이 만듦
+    //   - oAuth2UserService: 11장 CustomOAuth2UserService
+    //   - oAuth2SuccessHandler: 11장 OAuth2LoginSuccessHandler
+    private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepository;
+    private final ObjectProvider<OAuth2UserService<OAuth2UserRequest, OAuth2User>> oAuth2UserService;
+    private final ObjectProvider<AuthenticationSuccessHandler> oAuth2SuccessHandler;
 
     // ── SecurityFilterChain 빈 등록 ──────────────────────────
     // 역할: HTTP 요청에 대한 보안 규칙을 설정하는 "필터 체인"을 만듭니다.
@@ -203,6 +221,26 @@ public class SecurityConfig {
             // API 요청이 오면 JWT 토큰을 먼저 검증한 후, 나머지 보안 처리를 진행
             // 비유: 정문(기본 인증) 앞에 "사전 검문소(JWT 검증)"를 추가로 설치
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // ── [추가] 소셜 로그인 (카카오 · 네이버 · 구글) ────────
+        // 클라이언트 등록 정보가 있을 때만 켭니다. 없으면(기본 실행) 이 부분을 건너뛰므로
+        // 키 없이도 애플리케이션이 그대로 실행됩니다. (11장 참고)
+        if (clientRegistrationRepository.getIfAvailable() != null) {
+            http.oauth2Login(oauth -> {
+                oauth.loginPage("/members/login");                 // 로그인 화면은 우리 화면
+                OAuth2UserService<OAuth2UserRequest, OAuth2User> userService = oAuth2UserService.getIfAvailable();
+                if (userService != null) {
+                    // 소셜 서비스가 준 사용자 정보로 우리 DB 회원을 찾거나 만듦
+                    oauth.userInfoEndpoint(userInfo -> userInfo.userService(userService));
+                }
+                AuthenticationSuccessHandler successHandler = oAuth2SuccessHandler.getIfAvailable();
+                if (successHandler != null) {
+                    oauth.successHandler(successHandler);           // 성공 후 홈으로
+                } else {
+                    oauth.defaultSuccessUrl("/", true);
+                }
+            });
+        }
 
         return http.build();
     }

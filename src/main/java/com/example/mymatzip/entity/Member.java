@@ -375,4 +375,13 @@ public class Member {
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+
+    // ── [추가] 소셜 계정 연결 ──────────────────────────────────
+    // 소셜 로그인으로 가입하거나 기존 회원이 소셜 로그인을 처음 했을 때
+    // 어떤 서비스(provider: "kakao", "naver", "google")의 몇 번 회원(providerId)인지 저장합니다.
+    // MemberRepository.findByProviderAndProviderId() 가 이 값으로 회원을 찾습니다.
+    public void linkSocial(String provider, String providerId) {
+        this.provider = provider;
+        this.providerId = providerId;
+    }
 }

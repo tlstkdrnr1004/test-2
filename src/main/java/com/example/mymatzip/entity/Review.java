@@ -9,6 +9,8 @@ package com.example.mymatzip.entity; // 이 파일이 속한 패키지(폴더) �
 // ──────────────────────────────────────────────────────────
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 // JPA(Java Persistence API) 관련 어노테이션을 모두 가져옵니다.
 // 포함된 것들:
 //   @Entity -- 이 클래스가 DB 테이블임을 선언
@@ -177,6 +179,8 @@ public class Review {
     //   [사용 화면] 리뷰 목록 -- "작성자: 맛집탐험가" 표시
     //   [사용 화면] 리뷰 삭제 -- 본인이 작성한 리뷰인지 확인 (member_id 비교)
     //   [사용 화면] 관리자(ADMIN)는 다른 사람의 리뷰도 삭제 가능
+    // [수정] 회원이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "member_id", nullable = false)
 
     // Member member: 이 리뷰를 작성한 회원 객체
@@ -202,6 +206,9 @@ public class Review {
     //
     //   [사용 화면] 맛집 상세 페이지 -- restaurant_id로 해당 맛집의 리뷰만 필터링하여 표시
     //   [참고] 맛집이 삭제되면 이 맛집에 달린 리뷰들도 함께 처리해야 합니다.
+    // [수정] 맛집이 삭제되면 DB 가 이 행도 함께 지웁니다 (외래 키 ON DELETE CASCADE).
+    //   이 줄이 없으면 리뷰·찜이 달린 맛집을 지울 때 외래 키 오류(500)가 납니다.
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "restaurant_id", nullable = false)
 
     // Restaurant restaurant: 이 리뷰가 달린 맛집 객체
