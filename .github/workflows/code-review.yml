@@ -1,0 +1,69 @@
+name: PR Code Review Helper
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  review-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📊 변경 사항 분석
+        id: changes
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | wc -l)
+          ADDED_LINES=$(git diff --stat ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tail -1 | grep -oP '\d+ insertion' | grep -oP '\d+' || echo "0")
+          DELETED_LINES=$(git diff --stat ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tail -1 | grep -oP '\d+ deletion' | grep -oP '\d+' || echo "0")
+          TOTAL_CHANGES=$((ADDED_LINES + DELETED_LINES))
+
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "added_lines=$ADDED_LINES" >> $GITHUB_OUTPUT
+          echo "deleted_lines=$DELETED_LINES" >> $GITHUB_OUTPUT
+          echo "total_changes=$TOTAL_CHANGES" >> $GITHUB_OUTPUT
+
+      - name: 📝 PR 요약 코멘트
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = '${{ steps.changes.outputs.changed_files }}';
+            const addedLines = '${{ steps.changes.outputs.added_lines }}';
+            const deletedLines = '${{ steps.changes.outputs.deleted_lines }}';
+            const totalChanges = parseInt('${{ steps.changes.outputs.total_changes }}');
+
+            let emoji = '✅';
+            let message = '적절한 크기의 PR입니다.';
+
+            if (totalChanges > 500) {
+              emoji = '⚠️';
+              message = 'PR이 너무 큽니다! 작은 단위로 나눠서 리뷰하기 쉽게 만들어주세요.';
+            } else if (totalChanges > 300) {
+              emoji = '🟡';
+              message = 'PR 크기가 조금 큽니다. 가능하면 나눠주세요.';
+            }
+
+            const body = `## ${emoji} PR 변경 사항 요약
+
+            | 항목 | 수치 |
+            |------|------|
+            | 📁 변경된 파일 수 | **${changedFiles}개** |
+            | ➕ 추가된 줄 | **${addedLines}줄** |
+            | ➖ 삭제된 줄 | **${deletedLines}줄** |
+            | 📊 총 변경량 | **${totalChanges}줄** |
+
+            ${message}
+
+            ---
+            🤖 *자동 생성된 코멘트입니다.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
