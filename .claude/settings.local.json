@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip' -type f -name *.java -o -name *.jsp -o -name *.gradle -o -name *.yml -o -name *.properties -o -name *.sql -o -name *.css -o -name *.js -o -name .gitignore)",
+      "Bash(find \"G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip/src/main/java\" -type f -name \"*.java\" -exec wc -l {} +)",
+      "Bash(sort -k2)",
+      "Bash(find \"G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip/src/main/webapp/WEB-INF/views\" -type f -name \"*.jsp\" -exec wc -l {} +)",
+      "Bash(findstr /c:\"<summary\" tutorial_result2.html)",
+      "Bash(findstr /c:\"<summary\" \"G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip\\\\docs\\\\tutorial_result2.html\")",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__read_multiple_files",
+      "Bash(grep -E \"\\\\.jsp$\")",
+      "Bash(where python:*)",
+      "Bash(python _insert_markers.py)",
+      "Bash(ls -la \"G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip\\\\src\\\\main\\\\resources\"\" | grep -E \"application.properties)",
+      "Bash(data.sql \")",
+      "Bash(find 'G:\\\\내 드라이브\\\\KH정보교육원\\\\IntelliJ IDEA 2025.3.3\\\\my-matzip\\\\src\\\\main\\\\webapp' -name *.jsp)"
+    ]
+  }
+}
